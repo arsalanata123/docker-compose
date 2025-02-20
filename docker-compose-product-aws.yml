@@ -7,35 +7,35 @@ services:
       MYSQL_HOST: mysqldb
       MYSQL_ROOT_USER: root
       MYSQL_ROOT_PASSWORD: root
-#      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+      #      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
       MYSQL_DATABASE: ecomdbproduct
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
   discovery-app:
-    image: 000111222333444555666777888999/img-disc
-#    build: con-disc
+    image: 000111222333444555666777888999/discovery:latest
+    #    build: con-disc
     container_name: con-disc
     ports:
       - "8761:8761"
-#  configserver:
-#    build:
-#      context: ./configServer/.
-#      dockerfile: ./Dockerfile
-#    container_name: con-cs
-#    ports:
-#      - "8088:8088"
+    #  configserver:
+    #    build:
+    #      context: ./configServer/.
+    #      dockerfile: ./Dockerfile
+    #    container_name: con-cs
+    #    ports:
+    #      - "8088:8088"
     #  # Spring Boot Application Service
   productservices:
-    image: 000111222333444555666777888999/img-ps
-#    build: con-ps
+    image: 000111222333444555666777888999/ps:latest
+    #    build: con-ps
     container_name: con-ps
     ports:
-      - "9091:9091"
+      - "81:9091"
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-app:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://54.86.100.235:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecomdbproduct
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
@@ -43,13 +43,13 @@ services:
       - discovery-app
       - mysql
   backend-app:
-    image: 000111222333444555666777888999/img-app
-#    build: con-app
+    image: 000111222333444555666777888999/app:latest
+    #    build: con-app
     container_name: con-app
     ports:
-      - "8090:9090"
+      - "80:9090"
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-app:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://54.86.100.235:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecomdb
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
