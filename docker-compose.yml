@@ -1,0 +1,92 @@
+#for local docker compose.
+#version: "1.0"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysqldb
+    environment:
+      MYSQL_HOST: mysqldb
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecomdbproduct
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+  app-discovery:
+    build:
+      context: ./discovery-new
+      dockerfile: ./Dockerfile
+      no_cache: true
+      platforms:
+        - "linux/arm64"
+    container_name: con-disc
+    ports:
+      - "8762:8761"
+#  configserver:
+#    build:
+#      context: ./configServer/.
+#      dockerfile: ./Dockerfile
+#    container_name: con-cs
+#    ports:
+#      - "8088:8088"
+    #  # Spring Boot Application Service
+  app-userservice:
+    build:
+      context: ./userService/.
+      dockerfile: ./Dockerfile
+      no_cache: true
+      platforms:
+        - "linux/arm64"
+    container_name: con-us
+    ports:
+      - "9092:9092"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://host.docker.internal:8762/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/securitydb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - app-discovery
+      - mysql
+  ps:
+    #    image: 000111222333444555666777888999/img-ps
+    #    image: ps:latest
+    #    platform: "linux/amd64"
+    build:
+      context: ./productservices/.
+      dockerfile: ./Dockerfile
+      no_cache: true
+      platforms:
+        - "linux/arm64"
+    container_name: con-ps
+    ports:
+      - "9091:9091"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://host.docker.internal:8762/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecomdbproduct
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - app-discovery
+      - mysql
+  app-backend:
+    build:
+      context: ./backend-new/.
+      dockerfile: ./Dockerfile
+      no_cache: true
+      platforms:
+        - "linux/arm64"
+    container_name: con-app
+    ports:
+      - "9090:9090"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://host.docker.internal:8762/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecomdb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - app-discovery
+      - mysql
+volumes:
+  mysql_data:
